@@ -1,0 +1,97 @@
+# Временные файлы Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Логи и временные файлы
+*.log
+*.log.*
+logs/
+*.tmp
+
+# Файлы виртуального окружения
+venv/
+env/
+.venv/
+.env/
+virtualenv/
+ENV/
+
+# Зависимости и пакеты
+site-packages/
+dist/
+build/
+*.egg-info/
+*.egg
+wheels/
+*.whl
+
+# Файлы редакторов и IDE
+.idea/              # PyCharm
+.vscode/            # Visual Studio Code
+*.sublime-workspace # Sublime Text
+*.sublime-project
+
+# Секреты и конфиденциальные данные
+.env                # Переменные окружения (например, API-ключи)
+*.pem               # Сертификаты
+*.key
+*.crt
+secrets/
+credentials.json
+
+# Базы данных
+*.db                # SQLite и другие локальные базы
+*.sqlite3
+*.sql
+
+# Кэш и временные данные
+*.cache
+.cache/
+.pytest_cache/
+.hypothesis/
+
+# Системные файлы macOS
+.DS_Store
+.Trashes
+.Spotlight-V100
+._*
+
+# Системные файлы Windows
+Thumbs.db
+Desktop.ini
+
+# Выходные файлы и сборки
+*.out
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Тестовые файлы и покрытие
+coverage/
+*.coverage
+.coverage.*
+htmlcov/
+tox/
+nosetests.xml
+junit.xml
+
+# Локальные настройки
+local_settings.py
+settings_local.py
+
+# Прочие временные файлы
+*.bak
+*.swp
+*~
+
+# Специфично для FastAPI/веб-проектов (если применимо)
+static/uploads/     # Загруженные файлы
+media/
+*.sock             # Unix-сокеты
+
+# Прочие популярные инструменты
+node_modules/       # Если используешь frontend (например, с FastAPI)
+*.min.js
+*.min.css
