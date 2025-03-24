@@ -21,6 +21,7 @@ async def get_hotels(
     pagination: PaginationDep,
     id: int | None = Query(default=None, description="ID"),
     title: str | None = Query(default=None, description="Hotel name"),
+    location: str | None = Query(default=None, description="Hotel location")
 ):
     per_page = pagination.per_page or 5
     async with async_session_maker() as session:
@@ -29,6 +30,8 @@ async def get_hotels(
             query = query.filter_by(id=id)
         if title:
             query = query.filter_by(title=title)
+        if location:
+            query = query.where(HotelsOrm.__table__.c.location.like(f'%{location}%'))
         query = (
             query
             .limit(per_page)
