@@ -1,6 +1,7 @@
-from fastapi import Query, Body
+from fastapi import Query, Body, Depends
 from fastapi.routing import APIRouter
-from schemas.hotels import Hotel, HotelPATCH
+from src.schemas.hotels import Hotel, HotelPATCH
+from src.api.dependencies import PaginationDep
 
 
 router = APIRouter(prefix='/hotels', tags=['Отели'])
@@ -24,24 +25,23 @@ HOTELS = [
             summary='Получения списка отелей',
             description='Получение списка отелей по фильтрам id и title. Фильрацию можно делать как по одному фильтру, так и сразу по двум. При отправлке дефолтных значений для фильтров роутер отдаст весь список отелей.')
 def get_hotels(
+    pagination: PaginationDep,
     id: int | None = Query(default=None, description="ID"),
     title: str | None = Query(default=None, description="Hotel name"),
-    page: int | None = Query(default=1, description="Page"),
-    per_page: int | None = Query(default=5, description="Items per page")
 ) -> list[Hotel]:
     hotels_ = []
-    if per_page == 0:
-        per_page = 5
-    if page == 0:
-        page = 1
+    if pagination.per_page is None:
+        pagination.per_page = 5
+    if pagination.page is None:
+        pagination.page = 1
     for hotel in HOTELS:
         if id and hotel['id'] != id:
             continue
         if title and hotel['title'] != title:
             continue
         hotels_.append(hotel)
-    offset = (page - 1) * per_page
-    return hotels_[offset: offset + per_page]
+    offset = (pagination.page - 1) * pagination.per_page
+    return hotels_[offset: offset + pagination.per_page]
 
 
 @router.post('',
