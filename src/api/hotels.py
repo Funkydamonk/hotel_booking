@@ -2,7 +2,7 @@ from fastapi import Query, Body, Depends
 
 from fastapi.routing import APIRouter
 
-from sqlalchemy import insert
+from sqlalchemy import insert, select
 
 from src.schemas.hotels import Hotel, HotelPATCH
 from src.api.dependencies import PaginationDep
@@ -12,40 +12,25 @@ from src.models.hotels import HotelsOrm
 
 router = APIRouter(prefix='/hotels', tags=['Отели'])
 
-HOTELS = [
-    {'id': 1, 'title': 'Sochi', 'name': 'Sochi'},
-    {'id': 2, 'title': 'Dubai', 'name': 'Dubai'},
-    {'id': 3, 'title': 'Boston', 'name': 'Boston'},
-    {'id': 4, 'title': 'London', 'name': 'London'},
-    {'id': 5, 'title': 'Abu Dhabi', 'name': 'Abu Dhabi'},
-    {'id': 6, 'title': 'Lodoff', 'name': 'Lodoff'},
-    {'id': 7, 'title': 'Cork', 'name': 'Cork'},
-    {'id': 8, 'title': 'Moscow', 'name': 'Moscow'},
-    {'id': 9, 'title': 'Kingston', 'name': 'Kingston'},
-    {'id': 10, 'title': 'Waterland', 'name': 'Waterland'}
-]
-
 
 
 @router.get('',
             summary='Получения списка отелей',
             description='Получение списка отелей по фильтрам id и title. Фильрацию можно делать как по одному фильтру, так и сразу по двум. При отправлке дефолтных значений для фильтров роутер отдаст весь список отелей.')
-def get_hotels(
+async def get_hotels(
     pagination: PaginationDep,
     id: int | None = Query(default=None, description="ID"),
     title: str | None = Query(default=None, description="Hotel name"),
 ) -> list[Hotel]:
-    hotels_ = []
+    async with async_session_maker() as session:
+        get_hotels_query = select(HotelsOrm)
+        result = await session.execute(get_hotels_query)
+        hotels = result.scalars().all()
+        return hotels
     if pagination.per_page is None:
         pagination.per_page = 5
     if pagination.page is None:
         pagination.page = 1
-    for hotel in HOTELS:
-        if id and hotel['id'] != id:
-            continue
-        if title and hotel['title'] != title:
-            continue
-        hotels_.append(hotel)
     offset = (pagination.page - 1) * pagination.per_page
     return hotels_[offset: offset + pagination.per_page]
 
