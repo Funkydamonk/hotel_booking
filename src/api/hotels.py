@@ -21,18 +21,22 @@ async def get_hotels(
     pagination: PaginationDep,
     id: int | None = Query(default=None, description="ID"),
     title: str | None = Query(default=None, description="Hotel name"),
-) -> list[Hotel]:
+):
+    per_page = pagination.per_page or 5
     async with async_session_maker() as session:
-        get_hotels_query = select(HotelsOrm)
-        result = await session.execute(get_hotels_query)
+        query = select(HotelsOrm)
+        if id:
+            query = query.filter_by(id=id)
+        if title:
+            query = query.filter_by(title=title)
+        query = (
+            query
+            .limit(per_page)
+            .offset((pagination.page - 1) * per_page)
+        )
+        result = await session.execute(query)
         hotels = result.scalars().all()
-        return hotels
-    if pagination.per_page is None:
-        pagination.per_page = 5
-    if pagination.page is None:
-        pagination.page = 1
-    offset = (pagination.page - 1) * pagination.per_page
-    return hotels_[offset: offset + pagination.per_page]
+        return hotels    
 
 
 @router.post('',
