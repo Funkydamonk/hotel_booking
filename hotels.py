@@ -7,7 +7,15 @@ router = APIRouter(prefix='/hotels', tags=['Отели'])
 
 HOTELS = [
     {'id': 1, 'title': 'Sochi', 'name': 'Sochi'},
-    {'id': 2, 'title': 'Dubai', 'name': 'Dubai'}
+    {'id': 2, 'title': 'Dubai', 'name': 'Dubai'},
+    {'id': 3, 'title': 'Boston', 'name': 'Boston'},
+    {'id': 4, 'title': 'London', 'name': 'London'},
+    {'id': 5, 'title': 'Abu Dhabi', 'name': 'Abu Dhabi'},
+    {'id': 6, 'title': 'Lodoff', 'name': 'Lodoff'},
+    {'id': 7, 'title': 'Cork', 'name': 'Cork'},
+    {'id': 8, 'title': 'Moscow', 'name': 'Moscow'},
+    {'id': 9, 'title': 'Kingston', 'name': 'Kingston'},
+    {'id': 10, 'title': 'Waterland', 'name': 'Waterland'}
 ]
 
 
@@ -18,15 +26,22 @@ HOTELS = [
 def get_hotels(
     id: int | None = Query(default=None, description="ID"),
     title: str | None = Query(default=None, description="Hotel name"),
+    page: int | None = Query(default=1, description="Page"),
+    per_page: int | None = Query(default=5, description="Items per page")
 ) -> list[Hotel]:
     hotels_ = []
+    if per_page == 0:
+        per_page = 5
+    if page == 0:
+        page = 1
     for hotel in HOTELS:
         if id and hotel['id'] != id:
             continue
         if title and hotel['title'] != title:
             continue
         hotels_.append(hotel)
-    return hotels_
+    offset = (page - 1) * per_page
+    return hotels_[offset: offset + per_page]
 
 
 @router.post('',
