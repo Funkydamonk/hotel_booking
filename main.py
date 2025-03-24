@@ -1,81 +1,12 @@
 from fastapi import FastAPI, Query, Body
 from fastapi.openapi.docs import get_swagger_ui_html
+from hotels import router as hotels_router
 import uvicorn
 
 
-app = FastAPI()
+app = FastAPI(docs_url=None)
 
-
-HOTELS = [
-    {'id': 1, 'title': 'Sochi', 'name': 'Sochi'},
-    {'id': 2, 'title': 'Dubai', 'name': 'Dubai'}
-]
-
-
-@app.get('/hotels')
-def get_hotels(
-    id: int | None = Query(default=None, description="ID"),
-    title: str | None = Query(default=None, description="Hotel name"),
-):
-    hotels_ = []
-    for hotel in HOTELS:
-        if id and hotel['id'] != id:
-            continue
-        if title and hotel['title'] != title:
-            continue
-        hotels_.append(hotel)
-    return hotels_
-
-
-@app.post('/hotels')
-def create_hotel(title: str = Body(embed=True)):
-    global HOTELS
-    HOTELS.append({
-        'id': len(HOTELS) + 1,
-        'title': title
-    })
-    return {'status': 'ok'}
-
-
-@app.delete('/hotels/{hotel_id}')
-def delete_hotel(hotel_id: int):
-    global HOTELS
-    HOTELS = [hotel for hotel in HOTELS if hotel['id'] != hotel_id]
-    return {'status': 'ok'}
-
-
-@app.put('/hotels/{hotel_id}')
-def change_hotel(hotel_id: int,
-                 title: str = Body(),
-                 name: str = Body()):
-    global HOTELS
-    if not any([hotel['id'] == hotel_id for hotel in HOTELS]):
-        return {'error': 'No such hotel id'}
-
-    for i, hotel in enumerate(HOTELS):
-        if hotel['id'] == hotel_id:
-            HOTELS[i]['title'] = title
-            HOTELS[i]['name'] = name
-            break
-    return {'status': 'ok'}
-
-
-@app.patch('/hotels/{hotel_id}')
-def alter_hotel(hotel_id: int,
-                title: str | None = Body(default=None),
-                name: str | None = Body(default=None)):
-    if not any([hotel['id'] == hotel_id for hotel in HOTELS]):
-        return {'error': 'No such hotel id'}
-    if title is None and name is None:
-        return {'error': 'You must provide at least 1 value'}
-    for i, hotel in enumerate(HOTELS):
-        if hotel['id'] == hotel_id:
-            if title:
-                HOTELS[i]['title'] = title
-            if name:
-                HOTELS[i]['name'] = name
-            break
-    return {'status': 'ok'}
+app.include_router(hotels_router)
 
 
 @app.get("/docs", include_in_schema=False)
