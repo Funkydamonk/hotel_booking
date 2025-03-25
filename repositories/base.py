@@ -16,9 +16,9 @@ class BaseRepository:
         query = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query)
         return result.scalars().one_or_none()
-
-    async def insert_one(self, **values):
-        # data.model_dump()
-        stmt = insert(self.model).values(**values)
-        return await self.session.execute(stmt)
         
+    async def insert_one(self, **values):
+        stmt = insert(self.model).values(**values).returning(self.model)
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
+    
