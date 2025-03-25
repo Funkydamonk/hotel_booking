@@ -47,7 +47,7 @@ async def create_hotel(hotel_data: Hotel = Body(
         }}}
 )):
     async with async_session_maker() as session:
-        hotel = await HotelsRepository(session).insert_one(**hotel_data.model_dump())
+        hotel = await HotelsRepository(session).insert_one(hotel_data)
         await session.commit()
     return {'status': 'ok', 'data': hotel}
 
@@ -55,26 +55,21 @@ async def create_hotel(hotel_data: Hotel = Body(
 @router.delete('/{hotel_id}',
                summary='Удаление отеля',
                description='Удаление отеля по его id в базе данных.')
-def delete_hotel(hotel_id: int):
-    global HOTELS
-    HOTELS = [hotel for hotel in HOTELS if hotel['id'] != hotel_id]
+async def delete_hotel(hotel_id: int):
+    async with async_session_maker() as session:
+        await HotelsRepository(session).delete(id=hotel_id)
+        await session.commit()
     return {'status': 'ok'}
 
 
 @router.put('/{hotel_id}',
             summary='Полное обновление данных по отелю',
             description='Полное обновление данных по отелю. Необходимые переменные title и name')
-def edit_hotel(hotel_id: int,
-               hotel_data: Hotel):
-    global HOTELS
-    if not any([hotel['id'] == hotel_id for hotel in HOTELS]):
-        return {'error': 'No such hotel id'}
-
-    for i, hotel in enumerate(HOTELS):
-        if hotel['id'] == hotel_id:
-            HOTELS[i]['title'] = hotel_data.title
-            HOTELS[i]['name'] = hotel_data.name
-            break
+async def edit_hotel(hotel_id: int | None,
+                     hotel_data: Hotel):
+    async with async_session_maker() as session:
+        await HotelsRepository(session).edit(data=hotel_data, id=hotel_id)
+        await session.commit()
     return {'status': 'ok'}
 
 

@@ -1,4 +1,5 @@
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, delete, update
+from pydantic import BaseModel
 
 
 class BaseRepository:
@@ -17,8 +18,16 @@ class BaseRepository:
         result = await self.session.execute(query)
         return result.scalars().one_or_none()
         
-    async def insert_one(self, **values):
-        stmt = insert(self.model).values(**values).returning(self.model)
+    async def add(self, data: BaseModel):
+        stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         result = await self.session.execute(stmt)
         return result.scalar_one()
     
+    async def edit(self, data: BaseModel, **filter_by):
+        stmt = update(self.model).values(data.model_dump()).filter_by(**filter_by)
+        print(stmt.compile(compile_kwargs={"literal_binds": True}))
+        await self.session.execute(stmt)
+
+    async def delete(self, **filter_by):
+        stmt = delete(self.model).filter_by(**filter_by)
+        await self.session.execute(stmt)
