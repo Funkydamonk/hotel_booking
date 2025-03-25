@@ -2,13 +2,10 @@ from fastapi import Query, Body
 
 from fastapi.routing import APIRouter
 
-from sqlalchemy import insert, select, func
-
 from repositories.hotels import HotelsRepository
 from src.schemas.hotels import Hotel, HotelPATCH
 from src.api.dependencies import PaginationDep
 from src.database import async_session_maker
-from src.models.hotels import HotelsOrm
 
 
 router = APIRouter(prefix='/hotels', tags=['Отели'])
@@ -30,6 +27,13 @@ async def get_hotels(
                                                        title=title, 
                                                        limit=per_page, 
                                                        offset=page)
+
+
+@router.get('/{hotel_id}')
+async def get_hotel(hotel_id: int):
+    async with async_session_maker() as session:
+        result = await HotelsRepository(session).get_one_or_none(id=hotel_id)
+        return result
 
 
 @router.post('',
@@ -76,17 +80,9 @@ async def edit_hotel(hotel_id: int | None,
 @router.patch('/{hotel_id}', 
            summary='Частичное обновление данных об отеле',
            description='Частично обновляем данные об отеле. Необходимо предоставить значение хотя бы для одной переменной title или name, или сразу оба значения.')
-def part_edit_hotel(hotel_id: int, hotel_data: HotelPATCH):
-    if not any([hotel['id'] == hotel_id for hotel in HOTELS]):
-        return {'error': 'No such hotel id'}
-    if hotel_data.title is None and hotel_data.name is None:
-        return {'error': 'You must provide at least 1 value'}
-    for i, hotel in enumerate(HOTELS):
-        if hotel['id'] == hotel_id:
-            if hotel_data.title:
-                HOTELS[i]['title'] = hotel_data.title
-            if hotel_data.name:
-                HOTELS[i]['name'] = hotel_data.name
-            break
+async def part_edit_hotel(hotel_id: int, hotel_data: HotelPATCH):
+    async with async_session_maker() as session:
+        await HotelsRepository(session).edit(data=hotel_data, exclude_unset=True, id=hotel_id)
+        await session.commit()
     return {'status': 'ok'}
   
