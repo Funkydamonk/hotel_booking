@@ -26,3 +26,4 @@ async def register_user(
         await session.commit()
         
         return {'status': 'ok'}
+    
