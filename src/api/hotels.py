@@ -2,7 +2,7 @@ from fastapi import Query, Body
 
 from fastapi.routing import APIRouter
 
-from repositories.hotels import HotelsRepository
+from src.repositories.hotels import HotelsRepository
 from src.schemas.hotels import Hotel, HotelPATCH, HotelAdd
 from src.api.dependencies import PaginationDep
 from src.database import async_session_maker
