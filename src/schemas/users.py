@@ -1,16 +1,16 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 
 class UserRequestAdd(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
 
 class UserAdd(BaseModel):
-    email: str
+    email: EmailStr
     hashed_password: str
 
 
 class User(BaseModel):
     id: int
-    email: str
+    email: EmailStr
