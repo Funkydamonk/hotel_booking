@@ -3,7 +3,7 @@ from fastapi import Query, Body
 from fastapi.routing import APIRouter
 
 from repositories.hotels import HotelsRepository
-from src.schemas.hotels import Hotel, HotelPATCH
+from src.schemas.hotels import Hotel, HotelPATCH, HotelAdd
 from src.api.dependencies import PaginationDep
 from src.database import async_session_maker
 
@@ -39,7 +39,7 @@ async def get_hotel(hotel_id: int):
 @router.post('',
              summary='Добавление отеля',
              description='Добавление отеля в базу данных. Необходимо предоставить title и location в теле запроса.')
-async def create_hotel(hotel_data: Hotel = Body(
+async def create_hotel(hotel_data: HotelAdd = Body(
     openapi_examples={
         '1': {'summary':  'Сочи', 'value': {
                 'title': 'Отель у моря',
@@ -70,7 +70,7 @@ async def delete_hotel(hotel_id: int):
             summary='Полное обновление данных по отелю',
             description='Полное обновление данных по отелю. Необходимые переменные title и name')
 async def edit_hotel(hotel_id: int | None,
-                     hotel_data: Hotel):
+                     hotel_data: HotelAdd):
     async with async_session_maker() as session:
         await HotelsRepository(session).edit(data=hotel_data, id=hotel_id)
         await session.commit()
