@@ -57,30 +57,30 @@ async def create_hotel(db: DBDep, hotel_data: HotelAdd = Body(
 @router.delete('/{hotel_id}',
                summary='Удаление отеля',
                description='Удаление отеля по его id в базе данных.')
-async def delete_hotel(hotel_id: int):
-    async with async_session_maker() as session:
-        await HotelsRepository(session).delete(id=hotel_id)
-        await session.commit()
+async def delete_hotel(db: DBDep, hotel_id: int):
+    await db.hotels.delete(id=hotel_id)
+    await db.commit()
     return {'status': 'ok'}
 
 
 @router.put('/{hotel_id}',
             summary='Полное обновление данных по отелю',
             description='Полное обновление данных по отелю. Необходимые переменные title и name')
-async def edit_hotel(hotel_id: int | None,
+async def edit_hotel(db: DBDep, 
+                     hotel_id: int | None,
                      hotel_data: HotelAdd):
-    async with async_session_maker() as session:
-        await HotelsRepository(session).edit(data=hotel_data, id=hotel_id)
-        await session.commit()
+    await db.hotels.edit(data=hotel_data, id=hotel_id)
+    await db.commit()
     return {'status': 'ok'}
 
 
 @router.patch('/{hotel_id}', 
            summary='Частичное обновление данных об отеле',
            description='Частично обновляем данные об отеле. Необходимо предоставить значение хотя бы для одной переменной title или name, или сразу оба значения.')
-async def part_edit_hotel(hotel_id: int, hotel_data: HotelPATCH):
-    async with async_session_maker() as session:
-        await HotelsRepository(session).edit(data=hotel_data, exclude_unset=True, id=hotel_id)
-        await session.commit()
+async def part_edit_hotel(db: DBDep, 
+                          hotel_id: int, 
+                          hotel_data: HotelPATCH):
+    await db.edit(data=hotel_data, exclude_unset=True, id=hotel_id)
+    await db.commit()
     return {'status': 'ok'}
   
