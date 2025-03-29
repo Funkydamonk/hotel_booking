@@ -29,3 +29,6 @@ class AuthService:
                             algorithms=settings.ALGORITHM)
         except jwt.exceptions.DecodeError:
             raise HTTPException(status_code=401, detail='Неверный токен')
+        except jwt.exceptions.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail='Токен невалиден')
+        
