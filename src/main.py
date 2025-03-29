@@ -7,6 +7,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.api.hotels import router as hotels_router
+from src.api.rooms import router as rooms_router
 from src.api.auth import router as auth_router
 
 
@@ -14,6 +15,7 @@ app = FastAPI(docs_url=None)
 
 app.include_router(auth_router)
 app.include_router(hotels_router)
+app.include_router(rooms_router)
 
 
 @app.get("/docs", include_in_schema=False)
