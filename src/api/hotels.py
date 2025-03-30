@@ -1,6 +1,7 @@
 from fastapi import Query, Body
 
 from fastapi.routing import APIRouter
+from datetime import date
 
 from src.repositories.hotels import HotelsRepository
 from src.schemas.hotels import Hotel, HotelPATCH, HotelAdd
@@ -16,17 +17,23 @@ router = APIRouter(prefix='/hotels', tags=['Отели'])
             summary='Получения списка отелей',
             description='Получение списка отелей по фильтрам id и title. Фильрацию можно делать как по одному фильтру, так и сразу по двум. При отправлке дефолтных значений для фильтров роутер отдаст весь список отелей.')
 async def get_hotels(
-    pagination: PaginationDep,
-    db: DBDep,
-    title: str | None = Query(default=None, description="Hotel name"),
-    location: str | None = Query(default=None, description="Hotel location")
+                    pagination: PaginationDep,
+                    db: DBDep,
+                    title: str | None = Query(default=None, description="Hotel name"),
+                    location: str | None = Query(default=None, description="Hotel location"),
+                    date_from: date = Query(example='2025-03-31'),
+                    date_to: date = Query(example='2025-04-15')
 ):
-    per_page = pagination.per_page or 5
+    per_page = pagination.per_page or 5 
     page = (pagination.page - 1) * per_page
-    return await db.hotels.get_all(location=location, 
-                                                       title=title, 
-                                                       limit=per_page, 
-                                                       offset=page)
+    return await db.hotels.get_filtered_by_date(
+        date_from=date_from,
+        date_to=date_to,
+        title=title,
+        location=location,
+        limit=per_page,
+        offset=page
+    )
 
 
 @router.get('/{hotel_id}')
