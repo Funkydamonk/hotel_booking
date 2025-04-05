@@ -75,14 +75,7 @@ async def edit_room(db: DBDep,
                     room_data: RoomAddRequest):
     _room_data = RoomAdd(**room_data.model_dump(), hotel_id=hotel_id) 
     await db.rooms.edit(data=_room_data, id=room_id)
-    room_facilities = await db.rooms_facilities.get_filtered(room_id=room_id)
-    room_facilities_ids = [rf.facility_id for rf in room_facilities]
-    facilities_to_delete = [f_id for f_id in room_facilities_ids if f_id not in room_data.facilities_ids]
-    facilities_to_add = [RoomFacilityAdd(room_id=room_id, facility_id=f_id) for f_id in room_data.facilities_ids if f_id not in room_facilities_ids]
-    if facilities_to_delete:
-        await db.rooms_facilities.delete(RoomsFacilitiesOrm.facility_id.in_(facilities_to_delete), room_id=room_id)
-    if facilities_to_add:
-        await db.rooms_facilities.add_bulk(facilities_to_add)
+    await db.rooms_facilities.set_room_facilities(room_id=room_id, facilities_ids=room_data.facilities_ids)
     await db.commit()
     return {'status': 'OK'}
 
@@ -96,16 +89,8 @@ async def part_edit_room(db: DBDep,
                          room_data: RoomPatchRequest):
     _room_data = RoomPatch(**room_data.model_dump(exclude_unset=True), hotel_id=hotel_id)
     await db.rooms.edit(id=room_id, data=_room_data, exclude_unset=True, hotel_id=hotel_id)
-
     if room_data.facilities_ids:
-        room_facilities = await db.rooms_facilities.get_filtered(room_id=room_id)
-        room_facilities_ids = [rf.facility_id for rf in room_facilities]
-        facilities_to_delete = [f_id for f_id in room_facilities_ids if f_id not in room_data.facilities_ids]
-        facilities_to_add = [RoomFacilityAdd(room_id=room_id, facility_id=f_id) for f_id in room_data.facilities_ids if f_id not in room_facilities_ids]
-        if facilities_to_delete:
-            await db.rooms_facilities.delete(RoomsFacilitiesOrm.facility_id.in_(facilities_to_delete), room_id=room_id)
-        if facilities_to_add:
-            await db.rooms_facilities.add_bulk(facilities_to_add)
+        await db.rooms_facilities.set_room_facilities(room_id=room_id, facilities_ids=room_data.facilities_ids)
     await db.commit()
     return {'status': 'OK'}
         
