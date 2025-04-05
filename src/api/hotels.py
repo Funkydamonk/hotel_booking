@@ -87,7 +87,7 @@ async def edit_hotel(db: DBDep,
 async def part_edit_hotel(db: DBDep, 
                           hotel_id: int, 
                           hotel_data: HotelPATCH):
-    await db.edit(data=hotel_data, exclude_unset=True, id=hotel_id)
+    await db.hotels.edit(data=hotel_data, id=hotel_id, exclude_unset=True,)
     await db.commit()
     return {'status': 'ok'}
   

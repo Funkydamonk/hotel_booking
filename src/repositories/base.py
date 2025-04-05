@@ -39,12 +39,16 @@ class BaseRepository:
         result = await self.session.execute(stmt)
         model = result.scalar_one()
         return self.schema.model_validate(model, from_attributes=True)
+
+    async def add_bulk(self, data: list[BaseModel]):
+        stmt = insert(self.model).values([item.model_dump() for item in data])
+        await self.session.execute(stmt)
     
     async def edit(self, data: BaseModel, exclude_unset: bool = False, **filter_by):
         stmt = update(self.model).values(**data.model_dump(exclude_unset=exclude_unset)).filter_by(**filter_by)
-        # print(stmt.compile(compile_kwargs={"literal_binds": True}))
+        print(stmt.compile(compile_kwargs={"literal_binds": True}))
         await self.session.execute(stmt)
 
-    async def delete(self, **filter_by):
-        stmt = delete(self.model).filter_by(**filter_by)
+    async def delete(self, *filter, **filter_by):
+        stmt = delete(self.model).filter(*filter).filter_by(**filter_by)
         await self.session.execute(stmt)
